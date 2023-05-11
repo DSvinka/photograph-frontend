@@ -6,7 +6,7 @@
       {{album.title}}
     </v-card-title>
 
-    <v-card-actions class="justify-center">
+    <v-card-actions v-if="authStore.user.loggedIn && authStore.user.administrator" class="justify-center">
       <dialog-create-album/>
       <dialog-update-album/>
     </v-card-actions>
@@ -17,7 +17,7 @@
           <div class="photoswipe-item fade-in appear">
             <a
                 class="my-2"
-                :href="item.src"
+                :href="item.url"
                 :data-pswp-width="item.width"
                 :data-pswp-height="item.height"
                 itemprop="contentUrl"
@@ -26,7 +26,7 @@
                 data-cropped="true"
                 v-bind="props"
             >
-              <v-img class="d-flex" :src="item.src" alt="" loading="lazy">
+              <v-img class="d-flex" :src="item.url" alt="" loading="lazy">
                 <v-overlay absolute
                            :model-value="isHovering"
                            contained
@@ -62,8 +62,11 @@ import {useAlbumsStore} from "@/stores/albums.js";
 import {fetchAllAlbums} from "@/api/albums.js";
 import DialogCreateAlbum from "@/components/Dialogs/DialogCreateAlbum.vue";
 import DialogUpdateAlbum from "@/components/Dialogs/DialogUpdateAlbum.vue";
+import {useAuthStore} from "@/stores/auth.js";
 
 const albumsStore = useAlbumsStore();
+const authStore = useAuthStore();
+
 let album = ref(null)
 let lightbox = ref(null);
 

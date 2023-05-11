@@ -59,7 +59,7 @@
                 required
             ></v-file-input>
 
-            <v-btn color="primary" @click="uploadFiles" :disabled="filesInput.length !== 0">Загрузить Изображения</v-btn>
+            <v-btn color="primary" @click="uploadFiles" :disabled="filesInput.length === 0">Загрузить Изображения</v-btn>
           </v-card>
 
           <v-card class="elevation-12 px-5 py-5 mt-3">
@@ -83,7 +83,7 @@
                   <v-card-actions>
                     <v-spacer></v-spacer>
 
-                    <v-btn size="small" color="surface-variant" variant="text" icon="mdi-delete"></v-btn>
+                    <v-btn size="small" @click="removeAlbumFile(albumFile)" color="surface-variant" variant="text" icon="mdi-delete"></v-btn>
                   </v-card-actions>
                 </v-card>
               </v-col>
@@ -106,7 +106,7 @@
 import {onBeforeMount, onMounted, ref, watch} from 'vue';
 
 import { useMutation, useQuery, useQueryClient } from 'vue-query';
-import {fetchAllAlbums, fetchByIdAlbum, updateAlbum, deleteAlbum, uploadAlbumFile} from '@/api/albums.js';
+import {fetchAllAlbums, fetchByIdAlbum, updateAlbum, deleteAlbum, deleteAlbumFile, uploadAlbumFile} from '@/api/albums.js';
 import { createToast } from 'mosha-vue-toastify';
 
 import { useAuthStore } from '@/stores/auth.js';
@@ -139,10 +139,11 @@ const resultAlbums = useQuery('updateAlbum', () => {
 const queryClient = useQueryClient();
 
 const mutationUpdate = useMutation(
-    (data) => updateAlbum(props.albumId, {
+    (data) => updateAlbum(album.value.id, {
       buttonName: buttonNameInput.value,
       title: titleInput.value, description: descriptionInput.value,
-      coverFileName: coverFileData.value.coverFileName, coverFileType: coverFileData.value.coverFileType, coverFileBytes: coverFileInput.value
+      coverFileName: coverFileData.value.coverFileName, coverFileType: coverFileData.value.coverFileType, coverFileBytes: coverFileInput.value,
+      coverFileWidth: coverFileData.value.coverFileWidth, coverFileHeight: coverFileData.value.coverFileHeight
     }),
     {
       onError: (error) => {
@@ -175,7 +176,7 @@ const mutationUpdate = useMutation(
 const mutationUploadFile = useMutation(
     (data) => uploadAlbumFile(album.value.id, {
       fileName: data.fileType, fileType: data.fileType, fileBytes: data.fileBytes,
-      width: data.coverFileWidth, height: data.coverFileHeight,
+      width: data.width, height: data.height,
     }),
     {
       onError: (error) => {
@@ -219,6 +220,14 @@ function removeAlbum() {
   queryClient.refetchQueries('updateAlbum');
 }
 
+function removeAlbumFile(file) {
+  const results = deleteAlbumFile(album.value.id, file.id)
+  album.value.files = album.value.files.filter(item => item.id !== file.id)
+  albumsStore.update(album.value)
+
+  queryClient.refetchQueries('updateAlbum');
+}
+
 async function uploadFiles() {
   for (const file of filesInput.value) {
     mutationUploadFile.mutate(file)
@@ -229,19 +238,19 @@ async function onFileChange(event){
   let fileData = event.target.files[0];
   coverFileData.value = {
     coverFileName: fileData.name,
-    coverFileType: fileData.name.split('.')[-1]
+    coverFileType: fileData.name.split('.').at(-1),
   }
 
   const reader = new FileReader();
   reader.readAsDataURL(fileData);
   reader.onload = () => {
     let image = new Image();
-    image.src = reader.target.result;
+    image.src = reader.result;
     image.onload = function () {
-      coverFileInput.value = reader.target.result.split(',')[1];
+      coverFileInput.value = reader.result.split(',')[1];
 
-      coverFileData.value.coverFileWidth = this.width;
-      coverFileData.value.coverFileHeight = this.height;
+      coverFileData.value.coverFileWidth = image.naturalWidth;
+      coverFileData.value.coverFileHeight = image.naturalHeight;
     }
   };
 }
@@ -256,11 +265,11 @@ async function onFilesChange(event) {
     reader.readAsDataURL(fileData);
     reader.onload = () => {
       let image = new Image();
-      image.src = reader.target.result;
+      image.src = reader.result;
       image.onload = function () {
-        coverFileInput.value.push({
-          fileName: fileData.name, fileType: fileData.name.split('.')[-1], fileBytes: reader.target.result.split(',')[1],
-          width: this.width, height: this.height
+        filesInput.value.push({
+          fileName: fileData.name, fileType: fileData.name.split('.').at(-1), fileBytes: reader.result.split(',')[1],
+          width: image.width, height: image.height
         });
       }
     };

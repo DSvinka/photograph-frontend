@@ -20,8 +20,7 @@ export const useAlbumsStore = defineStore({
             this.items.push(model);
         },
         async remove(model) {
-            const index = this.items.findIndex((obj) => obj.id === model.id);
-            delete this.items[index]
+            this.items = this.items.filter(item => item.id !== model.id)
         },
         async fetch(albums) {
             this.items = albums;

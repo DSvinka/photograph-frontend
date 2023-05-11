@@ -5,7 +5,7 @@
       <v-tooltip activator="parent" location="bottom">Меню</v-tooltip>
     </v-btn>
 
-    <EditableText element="span" string-key="header_title" class="text-center text-grey-darken-3 text-h6 font-weight-bold mx-auto" model-value="Полина Ситникова"/>
+    <EditableText element="span" string-key="header_title" class="text-center text-grey-darken-3 text-h6 font-weight-bold mx-auto" model-value="Сайт фотографа"/>
   </v-app-bar>
 
   <v-dialog

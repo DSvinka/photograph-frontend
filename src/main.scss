@@ -1,0 +1,19 @@
+@use 'vuetify' with (
+  $utilities: 'true',
+  $color-pack: 'true',
+  $body-font-family: 'JetBrains Mono'
+);
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
+
+$body-font-family: 'JetBrains Mono';
+
+$typoOptions: display-4, display-3, display-2, display-1, headline, title, subtitle-1, subtitle-2, body-1, body-2, text-h1, text-h2, text-h3, text-h4, text-h5, text-h6, text-h7, caption, overline;
+#app {
+  font-family: $body-font-family, sans-serif !important;
+  @each $typoOption in $typoOptions {
+    .#{$typoOption} {
+      font-family: $body-font-family, sans-serif !important;
+    }
+  }
+}

@@ -1,6 +1,6 @@
 <template>
   <section class="about">
-    <div class="background-image" style="background: url('https://andyhardy.co/media/pages/home/d9587b1b9c-1631837366/andy-about-bg-2160x1200.jpg') center center; background-size: cover;"></div>
+    <div class="background-image" style="background: url('https://andyhardy.co/media/pages/home/1ad6ac672f-1683607197/andy-about-bg-2160x1200-crop.jpg') center center; background-size: cover;"></div>
     <div class="bottom-fade"></div>
     <div class="wrap-text">
       <EditableText element="p" class="p-text" string-key="index_about_text_1" model-value="<strong>Awkward introduction? Clammy handshake? Nah, let’s go in for a virtual bear hug and a quick two-minute spiel about who I am, because who I am is your new hyper-talented mate – a creative director and visual connoisseur with a background and degree in commercial and photojournalistic photography.</strong>'"/>

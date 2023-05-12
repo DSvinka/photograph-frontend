@@ -1,6 +1,6 @@
 <template>
   <footer>
-    <div class="background-image" style="background: url('https://andyhardy.co/media/site/6ea6b50483-1631837366/andrew-footer-1600x1080.jpg') center center; background-size: cover;"></div>
+    <div class="background-image" style="background: url('https://andyhardy.co/media/site/68fa4dc35d-1683607198/andrew-footer-1600x1080-crop.jpg') center center; background-size: cover;"></div>
     <div class="top-fade"></div>
     <div class="left-fade"></div>
     <div class="wrap-text">

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {useAuthStore} from "@/stores/auth.js";
 
-const BASE_URL = 'http://localhost:5290/api/';
+const BASE_URL = 'https://mirea.dsvinka.ru/api/';
 
 export const authApi = axios.create({
     baseURL: BASE_URL,
@@ -18,6 +18,9 @@ authApi.interceptors.response.use(
         const authStore = useAuthStore();
 
         const originalRequest = error.config;
+        if (!error.response || !error.response.status)
+            return Promise.reject(error);
+        
         const status = error.response.status;
         if (status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
@@ -50,16 +53,28 @@ export function getRefreshAuthHeader(opt_headers = {}) {
 
 
 export const loginUser = async (username, password) => {
-    const response = await authApi.post('auth/login', {username: username, password: password});
-    return response.data;
+    try {
+        const response = await authApi.post('auth/login', {username: username, password: password});
+        return response.data;
+    } catch (error) {
+        throw error
+    }
 };
 
 export const getMe = async () => {
+    try {
     const response = await authApi.get('auth/me', {headers: getAuthHeader()});
     return response.data;
+} catch (error) {
+    throw error
+}
 };
 
 export const refreshAccessToken = async (refreshToken) => {
+    try {
     const response = await authApi.post('auth/refresh', {refreshToken: refreshToken});
     return response.data;
+} catch (error) {
+    throw error
+}
 };

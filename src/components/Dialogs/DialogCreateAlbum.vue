@@ -11,7 +11,7 @@
         <v-toolbar-title>Создание Альбома</v-toolbar-title>
       </v-toolbar>
 
-      <v-form validate-on="input" @submit.prevent="submit">
+      <v-form validate-on="input" @submit.prevent="submitAlbum">
         <v-card-text>
           <v-text-field
               label="Наименование кнопки"
@@ -36,7 +36,7 @@
 
           <v-file-input
               label="Обложка альбома"
-              @change="onCoverFileChange"
+              @change="onCoverImageChange"
               :rules="[rules.required]"
               show-size
               required
@@ -58,98 +58,68 @@
 import {onBeforeUpdate, ref} from 'vue';
 
 import { useMutation, useQuery, useQueryClient } from 'vue-query';
-import { fetchAllAlbums, addAlbum } from '@/api/albums.js';
+import {fetchAllAlbums, addAlbum, updateAlbum} from '@/api/albums.js';
 import { createToast } from 'mosha-vue-toastify';
 
 import { useAuthStore } from '@/stores/auth.js';
 import rules from "@/plugins/rules.js";
 import {useAlbumsStore} from "@/stores/albums.js";
+import {onErrorAlert, onSuccessAlert} from "@/api/errorsAlertUtil.js";
+import {loadImageData} from "@/utils/fileUtils.js";
 
+const valid = ref(true)
 const openDialog = ref(false)
+
 const buttonNameInput = ref(null)
 const titleInput = ref(null)
 const descriptionInput = ref(null)
-const coverFileInput = ref(null)
-const coverFileData = ref(null)
 
-const valid = ref(true)
+const coverFileInput = ref(null)
 
 const albumsStore = useAlbumsStore();
 
-const resultAlbums = useQuery('addAlbum', () => {
-  let data = fetchAllAlbums();
-  albumsStore.fetch(data);
-}, {
-  enabled: false,
-  retry: 5,
-});
+useQuery('fetchAlbums', () => {
+    let data = fetchAllAlbums();
+    albumsStore.fetch(data);
+  }, {
+    onError: (error) => onErrorAlert(error),
+    enabled: false, retry: 5,
+  }
+);
 
 const queryClient = useQueryClient();
 
-const mutation = useMutation(
-    (data) => addAlbum({
-      buttonName: buttonNameInput.value,
-      title: titleInput.value, description: descriptionInput.value,
-      coverFileName: coverFileData.value.coverFileName, coverFileType: coverFileData.value.coverFileType,
-      coverFileWidth: coverFileData.value.coverFileWidth, coverFileHeight: coverFileData.value.coverFileHeight, coverFileBytes: coverFileInput.value
+const mutationUpdate = useMutation(
+    (data) => updateAlbum(album.value.id, {
+      buttonName: data.buttonName,
+      title: data.title, description: data.description,
+      coverFileName: data.coverFile.name, coverFileType: data.coverFile.type, coverFileBytes: data.coverFile.bytes,
+      coverFileWidth: data.coverFile.width, coverFileHeight: data.coverFile.height
     }),
     {
-      onError: (error) => {
-        if (Array.isArray(error.response.data.error)) {
-          error.response.data.error.forEach((el) =>
-              createToast(el.message, {
-                position: 'top-right',
-                type: 'warning',
-              })
-          );
-        } else {
-          createToast(error.response.data.message, {
-            position: 'top-right',
-            type: 'danger',
-          });
-        }
-      },
-      onSuccess: (data) => {
-        createToast('Альбом успешно создан!', {
-          position: 'top-right',
-        });
-
-        queryClient.refetchQueries('addAlbum');
-
+      onError: (error) => onErrorAlert(error),
+      onSuccess: (data) => onSuccessAlert("обновили альбом", () => {
+        queryClient.refetchQueries('fetchAlbums');
         openDialog.value = false;
-      },
+      })
     }
 );
 
-async function submit(event) {
+async function submitAlbum(event) {
   const results = await event
 
-  if (!results.valid) return;
+  if (!results.valid)
+    return;
 
-  mutation.mutate();
+  mutationUpdate.mutate({
+    buttonName: buttonNameInput.value,
+    title: titleInput.value, description: descriptionInput.value,
+    coverFile: coverFileInput.value
+  });
 }
 
-
-
-async function onCoverFileChange(event){
-  let fileData = event.target.files[0];
-  coverFileData.value = {
-    coverFileName: fileData.name,
-    coverFileType: fileData.name.split('.').at(-1),
-  }
-
-  const reader = new FileReader();
-  reader.readAsDataURL(fileData);
-  reader.onload = () => {
-    let image = new Image();
-    image.src = reader.result;
-    image.onload = function () {
-      coverFileInput.value = reader.result.split(',')[1];
-
-      coverFileData.value.coverFileWidth = image.width;
-      coverFileData.value.coverFileHeight = image.height;
-    }
-  };
+async function onCoverImageChange(event){
+  coverFileInput.value = await loadImageData(event.target.files[0]);
 }
 </script>
 

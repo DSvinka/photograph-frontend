@@ -60,6 +60,7 @@ import { createToast } from 'mosha-vue-toastify';
 
 import { useAuthStore } from '@/stores/auth.js';
 import rules from "@/plugins/rules.js";
+import {onErrorAlert, onSuccessAlert} from "@/api/errorsAlertUtil.js";
 
 const openDialog = ref(false)
 const usernameInput = ref(null)
@@ -69,56 +70,33 @@ const valid = ref(true)
 
 const authStore = useAuthStore();
 
-const authResultMe = useQuery('authUser', () => getMe(), {
-  enabled: false,
-  retry: 5,
-});
-
-const authResultStrings = useQuery('authUser', () => fetchAllStrings(), {
-  enabled: false,
-  retry: 5,
+useQuery('checkAuthUser', () => getMe(), {
+  onError: (error) => onErrorAlert(error),
+  enabled: false, retry: 5,
 });
 
 const queryClient = useQueryClient();
 
-const { isLoading, mutate } = useMutation(
+const mutationLogin = useMutation(
     (data) => loginUser(data.username, data.password),
     {
-      onError: (error) => {
-        if (Array.isArray(error.response.data.error)) {
-          error.response.data.error.forEach((el) =>
-              createToast(el.message, {
-                position: 'top-right',
-                type: 'warning',
-              })
-          );
-        } else {
-          createToast(error.response.data.message, {
-            position: 'top-right',
-            type: 'danger',
-          });
-        }
-      },
-      onSuccess: (data) => {
-        createToast('Вы успешно авторизировались!', {
-          position: 'top-right',
-        });
-
+      onError: (error) => onErrorAlert(error),
+      onSuccess: (data) => onSuccessAlert("авторизовались", () => {
         authStore.setAuthUser(data, true);
         authStore.setAuthTokens(data.accessToken, data.refreshToken)
-        queryClient.refetchQueries('authUser');
+        queryClient.refetchQueries('checkAuthUser');
 
         openDialog.value = false;
-      },
+      })
     }
 );
 
-async function submit(event) {
+async function submitLogin(event) {
   const results = await event
 
   if (!results.valid) return;
 
-  mutate({
+  mutationLogin.mutate({
     username: usernameInput.value,
     password: passwordInput.value,
   });

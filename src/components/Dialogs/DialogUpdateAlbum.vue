@@ -15,7 +15,7 @@
       <v-toolbar dark color="primary">
         <v-toolbar-title>Изменение Альбома</v-toolbar-title>
       </v-toolbar>
-      <v-form validate-on="input" @submit.prevent="submit">
+      <v-form validate-on="input" @submit.prevent="submitAlbum">
         <v-card-text>
           <v-text-field
               label="Наименование кнопки"
@@ -40,7 +40,7 @@
 
           <v-file-input
               label="Обложка альбома"
-              @change="onFileChange"
+              @change="onCoverImageChange"
               :rules="[rules.required]"
               show-size
               required
@@ -51,7 +51,7 @@
           <v-card class="elevation-12 px-5 py-5">
             <v-file-input
                 label="Изображения альбома"
-                @change="onFilesChange"
+                @change="onAlbumImagesChange"
                 :rules="[rules.required]"
                 multiple
                 counter
@@ -59,7 +59,7 @@
                 required
             ></v-file-input>
 
-            <v-btn color="primary" @click="uploadFiles" :disabled="filesInput.length === 0">Загрузить Изображения</v-btn>
+            <v-btn color="primary" @click="submitAlbumFiles" :disabled="albumFilesInput.length === 0">Загрузить Изображения</v-btn>
           </v-card>
 
           <v-card class="elevation-12 px-5 py-5 mt-3">
@@ -112,168 +112,103 @@ import { createToast } from 'mosha-vue-toastify';
 import { useAuthStore } from '@/stores/auth.js';
 import rules from "@/plugins/rules.js";
 import {useAlbumsStore} from "@/stores/albums.js";
+import {onErrorAlert, onSuccessAlert} from "@/api/errorsAlertUtil.js";
+import {loadImageData, loadImagesData} from "@/utils/fileUtils.js";
 
 const openDialog = ref(false)
+
 const buttonNameInput = ref(null)
 const titleInput = ref(null)
 const descriptionInput = ref(null)
-const coverFileInput = ref(null)
-const coverFileData = ref(null)
 
-const filesInput = ref([])
+const coverFileInput = ref(null)
+const albumFilesInput = ref([])
 
 const album = ref(null)
-
 const valid = ref(true)
 
 const albumsStore = useAlbumsStore();
 
-const resultAlbums = useQuery('updateAlbum', () => {
-  let data = fetchAllAlbums();
-  albumsStore.fetch(data);
-}, {
-  enabled: false,
-  retry: 5,
-});
+useQuery('fetchAlbums', () => {
+    let data = fetchAllAlbums();
+    albumsStore.fetch(data);
+  }, {
+    onError: (error) => onErrorAlert(error),
+    enabled: false, retry: 5
+  }
+);
 
 const queryClient = useQueryClient();
 
 const mutationUpdate = useMutation(
     (data) => updateAlbum(album.value.id, {
-      buttonName: buttonNameInput.value,
-      title: titleInput.value, description: descriptionInput.value,
-      coverFileName: coverFileData.value.coverFileName, coverFileType: coverFileData.value.coverFileType, coverFileBytes: coverFileInput.value,
-      coverFileWidth: coverFileData.value.coverFileWidth, coverFileHeight: coverFileData.value.coverFileHeight
+      buttonName: data.buttonName,
+      title: data.title, description: data.description,
+      coverFileName: data.coverFile.name, coverFileType: data.coverFile.type, coverFileBytes: data.coverFile.bytes,
+      coverFileWidth: data.coverFile.width, coverFileHeight: data.coverFile.height
     }),
     {
-      onError: (error) => {
-        if (Array.isArray(error.response.data.error)) {
-          error.response.data.error.forEach((el) =>
-              createToast(el.message, {
-                position: 'top-right',
-                type: 'warning',
-              })
-          );
-        } else {
-          createToast(error.response.data.message, {
-            position: 'top-right',
-            type: 'danger',
-          });
-        }
-      },
-      onSuccess: (data) => {
-        createToast('Альбом успешно создан!', {
-          position: 'top-right',
-        });
-
+      onError: (error) => onErrorAlert(error),
+      onSuccess: (data) => onSuccessAlert("обновили альбом", () => {
         queryClient.refetchQueries('updateAlbum');
-
         openDialog.value = false;
-      },
+      })
     }
 );
 
 const mutationUploadFile = useMutation(
     (data) => uploadAlbumFile(album.value.id, {
-      fileName: data.fileType, fileType: data.fileType, fileBytes: data.fileBytes,
+      fileName: data.name, fileType: data.type, fileBytes: data.bytes,
       width: data.width, height: data.height,
     }),
     {
-      onError: (error) => {
-        if (Array.isArray(error.response.data.error)) {
-          error.response.data.error.forEach((el) =>
-              createToast(el.message, {
-                position: 'top-right',
-                type: 'warning',
-              })
-          );
-        } else {
-          createToast(error.response.data.message, {
-            position: 'top-right',
-            type: 'danger',
-          });
-        }
-      },
-      onSuccess: (data) => {
-        createToast('Файл успешно загружен!', {
-          position: 'top-right',
-        });
-
+      onError: (error) => onErrorAlert(error),
+      onSuccess: (data) => onSuccessAlert("загрузили файлы", () => {
         queryClient.refetchQueries('updateAlbum');
-
         openDialog.value = false;
-      },
+      })
     }
 );
 
-async function submit(event) {
+async function submitAlbum(event) {
   const results = await event
 
-  if (!results.valid) return;
+  if (!results.valid)
+    return;
 
-  mutationUpdate.mutate();
+  mutationUpdate.mutate({
+    buttonName: buttonNameInput.value,
+    title: titleInput.value, description: descriptionInput.value,
+    coverFile: coverFileInput.value
+  });
+}
+
+function submitAlbumFiles() {
+  for (const file of albumFilesInput.value) {
+    mutationUploadFile.mutate(file)
+  }
 }
 
 function removeAlbum() {
-  const results = deleteAlbum(album.value.id)
+  deleteAlbum(album.value.id)
 
   queryClient.refetchQueries('updateAlbum');
 }
 
 function removeAlbumFile(file) {
-  const results = deleteAlbumFile(album.value.id, file.id)
+  deleteAlbumFile(album.value.id, file.id)
   album.value.files = album.value.files.filter(item => item.id !== file.id)
   albumsStore.update(album.value)
 
   queryClient.refetchQueries('updateAlbum');
 }
 
-async function uploadFiles() {
-  for (const file of filesInput.value) {
-    mutationUploadFile.mutate(file)
-  }
+async function onCoverImageChange(event){
+  coverFileInput.value = await loadImageData(event.target.files[0]);
 }
 
-async function onFileChange(event){
-  let fileData = event.target.files[0];
-  coverFileData.value = {
-    coverFileName: fileData.name,
-    coverFileType: fileData.name.split('.').at(-1),
-  }
-
-  const reader = new FileReader();
-  reader.readAsDataURL(fileData);
-  reader.onload = () => {
-    let image = new Image();
-    image.src = reader.result;
-    image.onload = function () {
-      coverFileInput.value = reader.result.split(',')[1];
-
-      coverFileData.value.coverFileWidth = image.naturalWidth;
-      coverFileData.value.coverFileHeight = image.naturalHeight;
-    }
-  };
-}
-
-async function onFilesChange(event) {
-  filesInput.value = [];
-
-  let filesData = event.target.files;
-
-  for (const fileData of filesData) {
-    const reader = new FileReader();
-    reader.readAsDataURL(fileData);
-    reader.onload = () => {
-      let image = new Image();
-      image.src = reader.result;
-      image.onload = function () {
-        filesInput.value.push({
-          fileName: fileData.name, fileType: fileData.name.split('.').at(-1), fileBytes: reader.result.split(',')[1],
-          width: image.width, height: image.height
-        });
-      }
-    };
-  }
+async function onAlbumImagesChange(event) {
+  albumFilesInput.value = await loadImagesData(event.target.files);
 }
 
 watch(() => albumsStore.currentAlbum, () => {

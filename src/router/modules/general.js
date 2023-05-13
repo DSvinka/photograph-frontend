@@ -11,4 +11,9 @@ export default [
         name: "Portfolio",
         component: () => import("@/views/Portfolio.vue"),
     },
+    {
+        path: "/reviews",
+        name: "Reviews",
+        component: () => import("@/views/Reviews.vue"),
+    },
 ]

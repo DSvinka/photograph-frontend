@@ -4,9 +4,10 @@ export const useAuthStore = defineStore({
     id: 'authStore',
     state: () => ({
         user: {
-            username: null,
+            username: undefined,
             loggedIn: false,
             administrator: false,
+            review: {}
         }
     }),
 
@@ -15,6 +16,7 @@ export const useAuthStore = defineStore({
             this.user.loggedIn = loggedIn;
             this.user.administrator = user.administrator;
             this.user.username = user.username;
+            this.user.review = user.review;
         },
         setAuthTokens(accessToken, refreshToken) {
             if (accessToken)

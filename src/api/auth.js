@@ -1,16 +1,17 @@
 import axios from 'axios';
 import {useAuthStore} from "@/stores/auth.js";
 
-const BASE_URL = 'https://mirea.dsvinka.ru/api/';
+//const BASE_URL = 'https://mirea.dsvinka.ru/api/';
+const BASE_URL = 'http://localhost:5290/api/';
 
-export const authApi = axios.create({
+export const serverApi = axios.create({
     baseURL: BASE_URL,
     withCredentials: true,
 });
 
-authApi.defaults.headers.common['Content-Type'] = 'application/json';
+serverApi.defaults.headers.common['Content-Type'] = 'application/json';
 
-authApi.interceptors.response.use(
+serverApi.interceptors.response.use(
     (response) => {
         return response;
     },
@@ -20,7 +21,7 @@ authApi.interceptors.response.use(
         const originalRequest = error.config;
         if (!error.response || !error.response.status)
             return Promise.reject(error);
-        
+
         const status = error.response.status;
         if (status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
@@ -30,7 +31,7 @@ authApi.interceptors.response.use(
 
             authStore.setAuthTokens(data.accessToken, data.refreshToken)
 
-            return authApi(originalRequest);
+            return serverApi(originalRequest);
         }
         return Promise.reject(error);
     }
@@ -52,9 +53,18 @@ export function getRefreshAuthHeader(opt_headers = {}) {
 }
 
 
-export const loginUser = async (username, password) => {
+export const loginUser = async (email, password) => {
     try {
-        const response = await authApi.post('auth/login', {username: username, password: password});
+        const response = await serverApi.post('auth/login', {email: email, password: password});
+        return response.data;
+    } catch (error) {
+        throw error
+    }
+};
+
+export const registerUser = async (model) => {
+    try {
+        const response = await serverApi.post('auth/register', model);
         return response.data;
     } catch (error) {
         throw error
@@ -63,18 +73,18 @@ export const loginUser = async (username, password) => {
 
 export const getMe = async () => {
     try {
-    const response = await authApi.get('auth/me', {headers: getAuthHeader()});
-    return response.data;
-} catch (error) {
-    throw error
-}
+        const response = await serverApi.get('auth/me', {headers: getAuthHeader()});
+        return response.data;
+    } catch (error) {
+        throw error
+    }
 };
 
 export const refreshAccessToken = async (refreshToken) => {
     try {
-    const response = await authApi.post('auth/refresh', {refreshToken: refreshToken});
-    return response.data;
-} catch (error) {
-    throw error
-}
+        const response = await serverApi.post('auth/refresh', {refreshToken: refreshToken});
+        return response.data;
+    } catch (error) {
+        throw error
+    }
 };

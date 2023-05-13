@@ -112,7 +112,7 @@ import { createToast } from 'mosha-vue-toastify';
 import { useAuthStore } from '@/stores/auth.js';
 import rules from "@/plugins/rules.js";
 import {useAlbumsStore} from "@/stores/albums.js";
-import {onErrorAlert, onSuccessAlert} from "@/api/errorsAlertUtil.js";
+import {onErrorAlert, onSuccessAlert} from "@/utils/errorsAlertUtils.js";
 import {loadImageData, loadImagesData} from "@/utils/fileUtils.js";
 
 const openDialog = ref(false)
@@ -129,13 +129,13 @@ const valid = ref(true)
 
 const albumsStore = useAlbumsStore();
 
-useQuery('fetchAlbums', () => {
-    let data = fetchAllAlbums();
-    albumsStore.fetch(data);
-  }, {
-    onError: (error) => onErrorAlert(error),
-    enabled: false, retry: 5
-  }
+useQuery('fetchAlbums',
+    () => fetchAllAlbums(),
+    {
+      onSuccess: (data) => albumsStore.fetch(data),
+      onError: (error) => onErrorAlert(error),
+      enabled: false, retry: 5,
+    }
 );
 
 const queryClient = useQueryClient();

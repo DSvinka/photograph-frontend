@@ -2,13 +2,13 @@
   <v-dialog v-model="openDialog" persistent width="500">
     <template v-slot:activator="{ props }">
       <template v-if="!authStore.user.loggedIn">
-        <v-btn color="primary" v-bind="props" size="x-small" variant="text" block>
+        <v-btn prepend-icon="mdi-login" color="primary" v-bind="props" variant="text" block>
           Авторизация
         </v-btn>
       </template>
 
       <template v-else>
-        <v-btn color="primary" @click="logout" size="x-small" variant="text" block>
+        <v-btn prepend-icon="mdi-logout" color="error" @click="logout" variant="text" block>
           Выйти
         </v-btn>
       </template>
@@ -19,14 +19,14 @@
       <v-toolbar dark color="primary">
         <v-toolbar-title>Авторизация</v-toolbar-title>
       </v-toolbar>
-      <v-form validate-on="input" @submit.prevent="submit">
+      <v-form validate-on="input" @submit.prevent="submitLogin">
         <v-card-text>
           <v-text-field
               type="username"
               autocomplete="username"
-              v-model="usernameInput"
+              v-model="emailInput"
               :rules="[rules.required]"
-              label="Username"
+              label="Email"
               required
           ></v-text-field>
 
@@ -35,7 +35,7 @@
               autocomplete="current-password"
               v-model="passwordInput"
               :rules="[rules.required]"
-              label="Password"
+              label="Пароль"
               required
           ></v-text-field>
         </v-card-text>
@@ -60,25 +60,30 @@ import { createToast } from 'mosha-vue-toastify';
 
 import { useAuthStore } from '@/stores/auth.js';
 import rules from "@/plugins/rules.js";
-import {onErrorAlert, onSuccessAlert} from "@/api/errorsAlertUtil.js";
+import {onErrorAlert, onSuccessAlert} from "@/utils/errorsAlertUtils.js";
 
-const openDialog = ref(false)
-const usernameInput = ref(null)
-const passwordInput = ref(null)
 
 const valid = ref(true)
+const openDialog = ref(false)
+
+const emailInput = ref(null)
+const passwordInput = ref(null)
 
 const authStore = useAuthStore();
 
-useQuery('checkAuthUser', () => getMe(), {
-  onError: (error) => onErrorAlert(error),
-  enabled: false, retry: 5,
-});
+useQuery('fetchUser',
+    () => getMe(),
+    {
+      onSuccess: (data) => authStore.setAuthUser(data, true),
+      onError: (error) => onErrorAlert(error),
+      enabled: false, retry: 5,
+    }
+);
 
 const queryClient = useQueryClient();
 
 const mutationLogin = useMutation(
-    (data) => loginUser(data.username, data.password),
+    (data) => loginUser(data.email, data.password),
     {
       onError: (error) => onErrorAlert(error),
       onSuccess: (data) => onSuccessAlert("авторизовались", () => {
@@ -97,7 +102,7 @@ async function submitLogin(event) {
   if (!results.valid) return;
 
   mutationLogin.mutate({
-    username: usernameInput.value,
+    email: emailInput.value,
     password: passwordInput.value,
   });
 }

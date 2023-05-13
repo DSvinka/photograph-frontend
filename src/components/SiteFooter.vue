@@ -8,7 +8,6 @@
       <div class="logo-row"><img src="https://andyhardy.co/assets/img/logo-andy.png" height="23"></div>
       <div class="credits-row">
         <EditableText element="li" string-key="footer_copyright" model-value="© 2023 Сайт фотографа"/>
-        <login-dialog></login-dialog>
       </div>
     </div>
     <div class="social-ico-block">

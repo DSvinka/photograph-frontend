@@ -19,6 +19,9 @@
       <v-list @click:select="menu=false" density="comfortable" class="justify-center align-self-center text-center mt-16">
         <v-list-item prepend-icon="mdi-view-dashboard" title="Главная" to="/" value="home"/>
         <v-list-item prepend-icon="mdi-forum" title="Портфолио" to="portfolio" value="portfolio"/>
+
+        <dialog-login/>
+        <dialog-register/>
       </v-list>
     </v-card>
   </v-dialog>
@@ -29,6 +32,8 @@ import { useAuthStore } from '@/stores/auth';
 
 import EditableText from "@/components/EditableText.vue";
 import {computed, ref} from "vue";
+import DialogLogin from "@/components/Dialogs/DialogLogin.vue";
+import DialogRegister from "@/components/Dialogs/DialogRegister.vue";
 
 let menu = ref(false);
 

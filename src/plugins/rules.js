@@ -5,6 +5,7 @@ export default {
   length_30: value => (value && value.length <= 30) || 'Значение поля не должно быть длинее 30 символов',
   length_50: value => (value && value.length <= 50) || 'Значение поля не должно быть длинее 50 символов',
   length_120: value => (value && value.length <= 120) || 'Значение поля не должно быть длинее 120 символов',
+  length_256: value => (value && value.length <= 256) || 'Значение поля не должно быть длинее 256 символов',
   length_200: value => (value && value.length <= 200) || 'Значение поля не должно быть длинее 200 символов',
   length_512: value => (value && value.length <= 512) || 'Значение поля не должно быть длинее 512 символов',
   length_1024: value => (value && value.length <= 1024) || 'Значение поля не должно быть длинее 1024 символов',

@@ -1,10 +1,10 @@
 import axios from 'axios';
-import {authApi, getAuthHeader} from './auth';
+import {serverApi, getAuthHeader} from './auth';
 
 
 export const updateString = async (key, text) => {
     try {
-    const response = await authApi.patch(`strings/${key}`, {value: text}, {headers: getAuthHeader()});
+    const response = await serverApi.patch(`strings/${key}`, {value: text}, {headers: getAuthHeader()});
     return response.data;
     } catch (error) {
         throw error
@@ -13,7 +13,7 @@ export const updateString = async (key, text) => {
 
 export const fetchAllStrings = async () => {
     try {
-    const response = await authApi.get('strings');
+    const response = await serverApi.get('strings');
     return response.data;
     } catch (error) {
         throw error

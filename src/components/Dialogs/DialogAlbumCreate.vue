@@ -58,13 +58,13 @@
 import {onBeforeUpdate, ref} from 'vue';
 
 import { useMutation, useQuery, useQueryClient } from 'vue-query';
-import {fetchAllAlbums, addAlbum, updateAlbum} from '@/api/albums.js';
+import {fetchAllAlbums, addAlbum} from '@/api/albums.js';
 import { createToast } from 'mosha-vue-toastify';
 
 import { useAuthStore } from '@/stores/auth.js';
 import rules from "@/plugins/rules.js";
 import {useAlbumsStore} from "@/stores/albums.js";
-import {onErrorAlert, onSuccessAlert} from "@/api/errorsAlertUtil.js";
+import {onErrorAlert, onSuccessAlert} from "@/utils/errorsAlertUtils.js";
 import {loadImageData} from "@/utils/fileUtils.js";
 
 const valid = ref(true)
@@ -78,10 +78,10 @@ const coverFileInput = ref(null)
 
 const albumsStore = useAlbumsStore();
 
-useQuery('fetchAlbums', () => {
-    let data = fetchAllAlbums();
-    albumsStore.fetch(data);
-  }, {
+useQuery('fetchAlbums',
+  () => fetchAllAlbums(),
+  {
+    onSuccess: (data) => albumsStore.fetch(data),
     onError: (error) => onErrorAlert(error),
     enabled: false, retry: 5,
   }
@@ -89,8 +89,8 @@ useQuery('fetchAlbums', () => {
 
 const queryClient = useQueryClient();
 
-const mutationUpdate = useMutation(
-    (data) => updateAlbum(album.value.id, {
+const mutationCreate = useMutation(
+    (data) => addAlbum({
       buttonName: data.buttonName,
       title: data.title, description: data.description,
       coverFileName: data.coverFile.name, coverFileType: data.coverFile.type, coverFileBytes: data.coverFile.bytes,
@@ -98,7 +98,7 @@ const mutationUpdate = useMutation(
     }),
     {
       onError: (error) => onErrorAlert(error),
-      onSuccess: (data) => onSuccessAlert("обновили альбом", () => {
+      onSuccess: (data) => onSuccessAlert("создали альбом", () => {
         queryClient.refetchQueries('fetchAlbums');
         openDialog.value = false;
       })
@@ -111,7 +111,7 @@ async function submitAlbum(event) {
   if (!results.valid)
     return;
 
-  mutationUpdate.mutate({
+  mutationCreate.mutate({
     buttonName: buttonNameInput.value,
     title: titleInput.value, description: descriptionInput.value,
     coverFile: coverFileInput.value

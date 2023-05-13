@@ -56,6 +56,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="primary" type="submit" :disabled="!valid">Зарегестрироваться</v-btn>
+          <v-btn color="danger" @click="valid = !valid">Отмена</v-btn>
           <v-spacer></v-spacer>
         </v-card-actions>
       </v-form>

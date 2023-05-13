@@ -1,8 +1,8 @@
 import axios from 'axios';
 import {useAuthStore} from "@/stores/auth.js";
 
-//const BASE_URL = 'https://mirea.dsvinka.ru/api/';
-const BASE_URL = 'http://localhost:5290/api/';
+const BASE_URL = 'https://mirea.dsvinka.ru/api/';
+//const BASE_URL = 'http://localhost:5290/api/';
 
 export const serverApi = axios.create({
     baseURL: BASE_URL,

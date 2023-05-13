@@ -25,7 +25,7 @@ export const useAlbumsStore = defineStore({
         async fetch(albums) {
             this.items = albums;
         },
-        async setCurrentAlbum(albumId) {
+        async setCurrentAlbumById(albumId) {
             const index = this.items.findIndex((obj) => obj.id === albumId);
             this.currentAlbum = this.items[index]
         }

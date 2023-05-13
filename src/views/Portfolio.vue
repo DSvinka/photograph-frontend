@@ -2,16 +2,16 @@
   <portfolio-filter/>
 
   <v-container>
-    <v-card-title class="d-flex justify-center" v-if="album">
-      {{album.title}}
+    <v-card-title class="d-flex justify-center" v-if="albumsStore.currentAlbum">
+      {{albumsStore.currentAlbum.title}}
     </v-card-title>
 
     <v-card-actions v-if="authStore.user.loggedIn && authStore.user.administrator" class="justify-center">
-      <dialog-create-album/>
-      <dialog-update-album/>
+      <dialog-album-create/>
+      <dialog-album-update/>
     </v-card-actions>
 
-    <masonry-wall v-if="album" id="gallery" :items="album.files" :column-width="300" :gap="16" style="width: 100%">
+    <masonry-wall v-if="albumsStore.currentAlbum && albumsStore.currentAlbum.files" id="gallery" :items="albumsStore.currentAlbum.files" :column-width="300" :gap="16" style="width: 100%">
       <template v-slot="{ item, index }">
         <v-hover v-slot="{ isHovering, props }">
           <div class="photoswipe-item fade-in appear">
@@ -56,18 +56,15 @@ import 'photoswipe/style.css';
 
 import {computed, onBeforeMount, onMounted, onUnmounted, ref, watch} from "vue";
 import {useMutation} from "vue-query";
-import {fetchAllStrings} from "@/api/strings.js";
-import {getMe} from "@/api/auth.js";
 import {useAlbumsStore} from "@/stores/albums.js";
 import {fetchAllAlbums} from "@/api/albums.js";
-import DialogCreateAlbum from "@/components/Dialogs/DialogCreateAlbum.vue";
-import DialogUpdateAlbum from "@/components/Dialogs/DialogUpdateAlbum.vue";
+import DialogAlbumCreate from "@/components/Dialogs/DialogAlbumCreate.vue";
+import DialogAlbumUpdate from "@/components/Dialogs/DialogAlbumUpdate.vue";
 import {useAuthStore} from "@/stores/auth.js";
 
 const albumsStore = useAlbumsStore();
 const authStore = useAuthStore();
 
-let album = ref(null)
 let lightbox = ref(null);
 
 const mutateAlbums = useMutation(
@@ -79,15 +76,15 @@ const mutateAlbums = useMutation(
     }
 );
 
-onBeforeMount(() => {
-  mutateAlbums.mutate();
-})
-
-watch(() => albumsStore.currentAlbum, () => {
-  album.value = albumsStore.currentAlbum;
+watch(() => albumsStore.items, () => {
+  if (albumsStore.items && albumsStore.items.length !== 0) {
+    albumsStore.setCurrentAlbumById(albumsStore.items[0].id)
+  }
 })
 
 onMounted(() => {
+  mutateAlbums.mutate();
+
   if (!lightbox.value) {
     lightbox.value = new PhotoSwipeLightbox({
       gallery: '#gallery',

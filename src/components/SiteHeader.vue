@@ -19,6 +19,7 @@
       <v-list @click:select="menu=false" density="comfortable" class="justify-center align-self-center text-center mt-16">
         <v-list-item prepend-icon="mdi-view-dashboard" title="Главная" to="/" value="home"/>
         <v-list-item prepend-icon="mdi-forum" title="Портфолио" to="portfolio" value="portfolio"/>
+        <v-list-item prepend-icon="mdi-message-draw" title="Отзывы" to="reviews" value="reviews"/>
 
         <dialog-login/>
         <dialog-register/>

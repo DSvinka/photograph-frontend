@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="openDialog" persistent width="500">
+  <v-dialog v-model="openDialog" width="500">
     <template v-slot:activator="{ props }">
       <template v-if="!authStore.user.loggedIn">
         <v-btn prepend-icon="mdi-account-plus" color="primary" v-bind="props" variant="text" block>
@@ -55,6 +55,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="primary" type="submit" :disabled="!valid">Зарегестрироваться</v-btn>
+          <v-btn color="danger" @click="openDialog = false">Отмена</v-btn>
           <v-spacer></v-spacer>
         </v-card-actions>
       </v-form>

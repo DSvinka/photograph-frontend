@@ -1,0 +1,8 @@
+{
+  "appId": "photograph.frontend",
+  "appName": "photograph-frontend",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

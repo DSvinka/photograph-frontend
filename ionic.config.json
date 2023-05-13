@@ -1,0 +1,7 @@
+{
+  "name": "photograph-frontend",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "custom"
+}

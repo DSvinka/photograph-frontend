@@ -1,8 +1,9 @@
 <template>
-  <v-dialog v-model="openDialog" persistent width="500">
+  <v-dialog v-model="openDialog" width="500">
     <template v-slot:activator="{ props }">
       <template v-if="!authStore.user.loggedIn">
-        <v-btn prepend-icon="mdi-account-plus" color="primary" v-bind="props" variant="text" block>
+        <v-btn color="primary" v-bind="props" variant="text" size="x-small">
+          <v-icon>mdi-account-plus</v-icon>
           Регистрация
         </v-btn>
       </template>

@@ -1,14 +1,16 @@
 <template>
-  <v-dialog v-model="openDialog" persistent width="500">
+  <v-dialog v-model="openDialog" width="500">
     <template v-slot:activator="{ props }">
       <template v-if="!authStore.user.loggedIn">
-        <v-btn prepend-icon="mdi-login" color="primary" v-bind="props" variant="text" block>
-          Авторизация
+        <v-btn color="primary" v-bind="props" variant="text" size="x-small">
+          <v-icon>mdi-login</v-icon>
+          Войти
         </v-btn>
       </template>
 
       <template v-else>
-        <v-btn prepend-icon="mdi-logout" color="error" @click="logout" variant="text" block>
+        <v-btn color="error" @click="logout" variant="text" size="x-small">
+          <v-icon>mdi-logout</v-icon>
           Выйти
         </v-btn>
       </template>
@@ -18,6 +20,7 @@
     <v-card class="elevation-12">
       <v-toolbar dark color="primary">
         <v-toolbar-title>Авторизация</v-toolbar-title>
+        <dialog-register/>
       </v-toolbar>
       <v-form validate-on="input" @submit.prevent="submitLogin">
         <v-card-text>
@@ -61,6 +64,7 @@ import { createToast } from 'mosha-vue-toastify';
 import { useAuthStore } from '@/stores/auth.js';
 import rules from "@/plugins/rules.js";
 import {onErrorAlert, onSuccessAlert} from "@/utils/errorsAlertUtils.js";
+import DialogRegister from "@/components/Dialogs/DialogRegister.vue";
 
 
 const valid = ref(true)

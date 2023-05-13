@@ -1,31 +1,20 @@
 <template>
-  <v-app-bar style="height: 64px; position: absolute; top: 0; right: 0; z-index: 9999 !important; background-color: transparent !important;">
-    <v-btn icon rounded size="x-large" color="primary" @click="menu = !menu">
-      <v-icon>mdi-menu</v-icon>
-      <v-tooltip activator="parent" location="bottom">Меню</v-tooltip>
+  <v-bottom-navigation color="teal" grow>
+    <v-btn to="/" value="home" size="x-small">
+      <v-icon>mdi-view-dashboard</v-icon>
+      Главная
+    </v-btn>
+    <v-btn to="portfolio" value="portfolio" size="x-small">
+      <v-icon>mdi-forum</v-icon>
+      Портфолио
+    </v-btn>
+    <v-btn to="reviews" value="reviews" size="x-small">
+      <v-icon>mdi-message-draw</v-icon>
+      Отзывы
     </v-btn>
 
-    <EditableText element="span" string-key="header_title" class="text-center text-grey-darken-3 text-h6 font-weight-bold mx-auto" model-value="Сайт фотографа"/>
-  </v-app-bar>
-
-  <v-dialog
-      v-model="menu"
-      fullscreen
-      transition="dialog-bottom-transition"
-      :scrim="false"
-      z-index="90"
-  >
-    <v-card class="d-flex">
-      <v-list @click:select="menu=false" density="comfortable" class="justify-center align-self-center text-center mt-16">
-        <v-list-item prepend-icon="mdi-view-dashboard" title="Главная" to="/" value="home"/>
-        <v-list-item prepend-icon="mdi-forum" title="Портфолио" to="portfolio" value="portfolio"/>
-        <v-list-item prepend-icon="mdi-message-draw" title="Отзывы" to="reviews" value="reviews"/>
-
-        <dialog-login/>
-        <dialog-register/>
-      </v-list>
-    </v-card>
-  </v-dialog>
+    <dialog-login/>
+  </v-bottom-navigation>
 </template>
 
 <script setup>
